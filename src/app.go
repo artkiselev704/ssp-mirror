@@ -33,16 +33,27 @@ func LoadConfig() error {
 }
 
 func HandleSession(srcConn net.Conn) {
-	defer srcConn.Close()
-
-	// Display info
-	slog.Info("new session", slog.String("srcAddr", srcConn.RemoteAddr().String()))
-	slog.Debug("info", slog.Int("NumGoroutine", runtime.NumGoroutine()))
+	// Handle current session
+	RemoteAddr := srcConn.RemoteAddr().String()
+	slog.Info("New session",
+		slog.String("RemoteAddr", RemoteAddr),
+		slog.Int("NumGoroutine", runtime.NumGoroutine()),
+	)
+	defer func() {
+		slog.Info("Session finished",
+			slog.String("RemoteAddr", RemoteAddr),
+			slog.Int("NumGoroutine", runtime.NumGoroutine()),
+		)
+		srcConn.Close()
+	}()
 
 	// Connect to the target
 	tgtConn, err := net.DialTimeout("tcp", gConfig.Target, time.Duration(gConfig.Timeout)*time.Second)
 	if err != nil {
-		slog.Error("failed to connect to the target", slog.String("err", err.Error()))
+		slog.Error("Failed to connect to the target",
+			slog.String("RemoteAddr", RemoteAddr),
+			slog.String("err", err.Error()),
+		)
 		return
 	}
 	defer tgtConn.Close()
