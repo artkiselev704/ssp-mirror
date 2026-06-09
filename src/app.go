@@ -29,6 +29,7 @@ func LoadConfig() error {
 	}
 	defer file.Close()
 
+	// Decode
 	return json.NewDecoder(file).Decode(&gConfig)
 }
 
@@ -84,27 +85,27 @@ func main() {
 	// Load config
 	err := LoadConfig()
 	if err != nil {
-		slog.Error("failed to load config", slog.String("err", err.Error()))
+		slog.Error("Failed to load config", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 
+	// Set logging level
 	slog.SetLogLoggerLevel(slog.Level(gConfig.LogLevel))
 
 	// Setup listener
 	listener, err := net.Listen("tcp", gConfig.Host)
 	if err != nil {
-		slog.Error("failed to setup listener", slog.String("err", err.Error()))
+		slog.Error("Failed to setup listener", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 	defer listener.Close()
 
-	// Accept connections
-	slog.Info("mirror started and ready to accept connections", slog.String("host", listener.Addr().String()))
-
+	// Wait for connections
+	slog.Info("Mirror started and ready to accept connections", slog.String("host", listener.Addr().String()))
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			slog.Warn("failed to accept connection", slog.String("err", err.Error()))
+			slog.Error("Failed to accept connection", slog.String("err", err.Error()))
 			continue
 		}
 
